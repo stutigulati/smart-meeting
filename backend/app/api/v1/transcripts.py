@@ -499,6 +499,19 @@ def _generate_report_task(meeting_id: int, db_url: str):
         report.gemini_model_used = result.get("gemini_model_used")
         report.generated_at = datetime.utcnow()
         db.commit()
+
+        # ── S3 upload — runs after commit so a failure never blocks the report ──
+        transcript_text = report.full_transcript_text
+        if transcript_text:
+            try:
+                from app.services.s3_service import upload_transcript_to_s3
+                s3_url = upload_transcript_to_s3(meeting_id, transcript_text)
+                if s3_url:
+                    report.transcript_s3_url = s3_url
+                    db.commit()
+            except Exception as s3_err:
+                print(f"[S3] Upload step failed for meeting {meeting_id}: {s3_err}")
+
     except Exception as e:
         print(f"[report] generation failed for meeting {meeting_id}: {e}")
         import traceback; traceback.print_exc()

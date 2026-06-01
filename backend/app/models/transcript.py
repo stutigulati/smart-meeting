@@ -78,4 +78,7 @@ class MeetingReport(Base):
     generated_at = Column(DateTime, server_default=func.now())
     gemini_model_used = Column(String, nullable=True)
 
+    # S3 URL of the uploaded transcript TXT (set after successful upload)
+    transcript_s3_url = Column(String, nullable=True)
+
     meeting = relationship("Meeting", back_populates="report")

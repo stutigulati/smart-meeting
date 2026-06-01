@@ -31,5 +31,11 @@ class Settings(BaseSettings):
     ZOOM_CLIENT_SECRET: str = ""
     ZOOM_ACCOUNT_ID: str = ""
 
+    # AWS S3 — transcript TXT storage
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "ap-south-1"
+    AWS_S3_BUCKET_NAME: str = ""
+
 
 settings = Settings()

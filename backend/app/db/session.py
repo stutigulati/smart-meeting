@@ -27,3 +27,21 @@ def init_db():
     # Import models so they're registered with Base
     from app.models import meeting, user, transcript  # noqa
     Base.metadata.create_all(bind=engine)
+    _run_migrations()
+
+
+def _run_migrations():
+    """Apply additive column migrations that create_all won't handle on existing tables."""
+    if "sqlite" not in settings.DATABASE_URL:
+        return
+    import sqlite3, re
+    db_path = re.sub(r"^sqlite:///", "", settings.DATABASE_URL)
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    # Add transcript_s3_url to meeting_reports if it doesn't exist yet
+    cur.execute("PRAGMA table_info(meeting_reports)")
+    cols = {row[1] for row in cur.fetchall()}
+    if "transcript_s3_url" not in cols:
+        cur.execute("ALTER TABLE meeting_reports ADD COLUMN transcript_s3_url TEXT")
+        conn.commit()
+    conn.close()
